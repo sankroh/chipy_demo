@@ -1,0 +1,21 @@
+#!{{ site_name }}/bin/python
+
+import os, sys
+import site
+ 
+# put virtualenv on pythonpath
+site.addsitedir('{{ paths.sites }}/{{ site_name }}/lib/python{{ python_version }}/site-packages')
+site.addsitedir('{{ paths.sites }}/{{ site_name }}/src/src_{{ project_name }}')
+ 
+# redirect print statements to apache log
+sys.stdout = sys.stderr
+ 
+os.environ['DJANGO_SETTINGS_MODULE'] = '{{ project_name }}.settings'
+ 
+import django.core.handlers.wsgi
+ 
+_application = django.core.handlers.wsgi.WSGIHandler()
+
+def application(environ, start_response):
+    environ['wsgi.url_scheme'] = environ.get('HTTP_X_URL_SCHEME', 'http')
+    return _application(environ, start_response)

@@ -1,0 +1,17 @@
+<VirtualHost 127.0.0.1:9000>
+    ServerName {{ site_name }}
+    ServerAdmin django-admins@manifestdigital.com
+    LogLevel warn
+    ErrorLog {{ paths.sites }}/{{ site_name }}/logs/apache_error.log
+    CustomLog {{ paths.sites }}/{{ site_name }}/logs/apache_access.log combined
+
+    WSGIDaemonProcess {{ project_name }} user=www-data group=www-data maximum-requests=10000
+    WSGIProcessGroup {{ project_name }}
+
+    WSGIScriptAlias / {{ paths.sites }}/{{ site_name }}/apache/django.wsgi
+
+    <Directory {{ paths.sites }}/{{ site_name }}/apache>
+        Order deny,allow
+        Allow from all
+    </Directory>
+</VirtualHost>

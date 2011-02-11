@@ -1,0 +1,88 @@
+server {
+        server_name  {{ site_name }};
+        rewrite ^(.*) http://www.{{ site_name }}$1 permanent;
+}
+
+server {
+        listen       80;
+        server_name www.{{ site_name }};
+
+        access_log  {{ paths.sites }}/{{ site_name }}/logs/nginx_access.log;
+        error_log   {{ paths.sites }}/{{ site_name }}/logs/nginx_error.log;
+        
+        {% if app_server == 'apache' %}
+        location / {
+            proxy_pass         http://127.0.0.1:9000/;
+            include /etc/nginx/proxy.conf;
+        }
+        {% elif app_server == 'uwsgi' %}
+        location / {
+            uwsgi_pass unix://{{ paths.sites }}/{{ site_name }}//wsgi/{{ site_name }}.sock;
+            include uwsgi_params;
+        }
+        {% elif app_server == 'gunicorn' %}
+        # Gunicorn config goes here
+        
+        {% else %}
+        location / {
+            proxy_pass         http://127.0.0.1:9000/;
+            include /etc/nginx/proxy.conf;
+        }
+        {% endif %}
+
+        location /media/ {
+            root   {{ paths.sites }}/{{ site_name }}/;
+            index index.html index.shtml;
+            ssi off;
+            gzip on;
+            gzip_http_version 1.1;
+            gzip_vary on;
+            gzip_comp_level 6;
+            gzip_min_length 1000;
+            gzip_proxied expired no-cache no-store private auth;
+            gzip_types text/plain text/html text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+            gzip_buffers 16 8k;
+            gzip_disable "MSIE [1-6]\.";
+            expires max;
+        }
+}
+{% if site_is_secure %}
+server {
+        listen {{ ip_address }}:443;
+        server_name  www.{{ site_name }};
+        #root {{ paths.sites }}/{{ site_name }}/;
+        access_log {{ paths.sites }}/{{ site_name }}/logs/nginx_https.access.log;
+
+        ssl on;
+        ssl_certificate /etc/ssl/{{ site_name }}/{{ site_name }}.crt;
+        ssl_certificate_key /etc/ssl/{{ site_name }}/{{ site_name }}.key;
+        ssl_prefer_server_ciphers on;
+
+        include  /etc/nginx/proxy.conf;        
+        proxy_set_header   X-Forwarded-Protocol https;
+        proxy_set_header   X-Url-Scheme $scheme;
+
+        location / {
+                proxy_pass http://127.0.0.1:9000/;
+        }
+
+        location /media/ {
+            root   {{ paths.sites }}/{{ site_name }}/;
+            index index.html index.shtml;
+            ssi off;
+            gzip on;
+            gzip_http_version 1.1;
+            gzip_vary on;
+            gzip_comp_level 6;
+            gzip_min_length 1000;
+            gzip_proxied expired no-cache no-store private auth;
+            gzip_types text/plain text/html text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+            gzip_buffers 16 8k;
+            gzip_disable "MSIE [1-6]\.";
+            expires max;
+        }        
+
+        ssl_protocols       SSLv3 TLSv1;
+        ssl_ciphers ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP;        
+}
+{% endif %}
