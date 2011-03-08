@@ -1,6 +1,6 @@
 <VirtualHost 127.0.0.1:9000>
     ServerName {{ site_name }}
-    ServerAdmin django-admins@manifestdigital.com
+    ServerAdmin alerts@example.com
     LogLevel warn
     ErrorLog {{ paths.sites }}/{{ site_name }}/logs/apache_error.log
     CustomLog {{ paths.sites }}/{{ site_name }}/logs/apache_access.log combined

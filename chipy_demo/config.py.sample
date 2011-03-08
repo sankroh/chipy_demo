@@ -1,0 +1,15 @@
+import os
+
+AWS_ACCESS_KEY = ''
+AWS_SECRET_KEY = ''
+EC2_AMI = 'ami-cef405a7' # AMI with EBS for Maverick 10.10 (64-bit)
+INSTANCE_TYPE = 'm1.large'
+KEY_NAME = ''
+NUM_INSTANCES = 1
+PUBLIC_IPS = True
+PUBLIC_KEY_FILE = ''
+TIMEOUT = 20
+
+# Ubuntu Settings
+ROOT_PATH = '/var/www/'
+JINJA_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "templates/jinja")
